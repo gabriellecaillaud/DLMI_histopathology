@@ -17,7 +17,7 @@ class HistoClassifierHead(nn.Module):
         self.dropout = nn.Dropout(p=dropout)
 
     def forward(self,x):
-        x  =self.dropout(self.layernorm1(x))
+        x = self.dropout(self.layernorm1(x))
         x = self.relu(self.layer1(x))
         x = self.layernorm2(self.dropout(x))
         x = self.relu(self.layer2(x))
