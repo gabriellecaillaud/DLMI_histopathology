@@ -31,8 +31,6 @@ class LoraConv(nn.Module):
         other_x=self.convA(x)
         other_x=self.convB(other_x)
         return self.alpha/self.r * other_x
-
-
     
 class LoraLinear(nn.Module):
     def __init__(self,lin_module, r= 4, alpha=4) -> None:
@@ -43,7 +41,7 @@ class LoraLinear(nn.Module):
         self.lora_B = nn.Linear(in_features=r,out_features=out_features)
         self.r=r
         self.alpha=alpha
-        
+
     def forward(self, x):
         result = self.lora_B(self.lora_A(x))
         return self.alpha/self.r * result
