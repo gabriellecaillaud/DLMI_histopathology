@@ -17,8 +17,7 @@ from DLMI_histopathology.dataset import *
 from copy import deepcopy
 from DLMI_histopathology.lora_finetune import LoraConv, LoraLinear
 import torch.nn as nn
-
-
+from DLMI_histopathology.staingan_training import StainNet
 
 TRAIN_IMAGES_PATH = 'train.h5'
 VAL_IMAGES_PATH = 'val.h5'
@@ -27,24 +26,21 @@ SEED = 0
 random.seed(SEED)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f'Working on {device}.')
-
+stainet = StainNet().cuda()
+stainet.load_state_dict(torch.load("StainNet-Public_layer3_ch32.pth"))
+stainet.eval()
 image_size=(98,98)
-# statistics center 4
-mean = [0.7997, 0.6722, 0.8196]
-std = [0.1200, 0.1492, 0.0916]
+
+print("Using StainNet statisitcs on center 3")
+mean = [0.6715, 0.3569, 0.5937]
+std = [0.1269, 0.1916, 0.1157]
 
 train_transform = transforms.Compose([
     transforms.Resize(image_size),
-    transforms.Normalize(mean=mean, std=std),
 ])
-
-val_transform = transforms.Compose([
-    transforms.Resize(image_size),
-    transforms.Normalize(mean=mean, std=std)
-])
-
-train_dataset = BaselineDataset(TRAIN_IMAGES_PATH, train_transform, 'train')
-val_dataset = BaselineDataset(VAL_IMAGES_PATH, val_transform, 'train')
+resizer = transforms.Resize(image_size)
+train_dataset = BaselineDataset(TRAIN_IMAGES_PATH, resizer, 'train')
+val_dataset = BaselineDataset(VAL_IMAGES_PATH, resizer, 'train')
 
 BATCH_SIZE=64
 train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=BATCH_SIZE)
@@ -91,7 +87,9 @@ def train_model(model, train_dataloader, val_dataloader, device, optimizer_name=
         
         for train_x, train_y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
-            train_pred = model(train_x.to(device))
+            train_x = stainet(train_x.to(device))
+            train_x = resizer(train_x)
+            train_pred = model(train_x)
             # print(f"{train_pred=}")
             # print(f"{train_y=}")
             train_pred = train_pred.squeeze(1)
@@ -108,7 +106,9 @@ def train_model(model, train_dataloader, val_dataloader, device, optimizer_name=
         
         for val_x, val_y in tqdm(val_dataloader, leave=False):
             with torch.no_grad():
-                val_pred = model(val_x.to(device))
+                val_x = stainet(val_x.to(device))
+                val_x = resizer(val_x)
+                val_pred = model(val_x)
                 val_pred = val_pred.squeeze(1)
             loss = criterion(val_pred, val_y.to(device).to(torch.float32))
             
