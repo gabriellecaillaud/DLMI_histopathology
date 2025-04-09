@@ -31,7 +31,7 @@ class BaselineDataset(Dataset):
     def __getitem__(self, idx):
         img_id = self.image_ids[idx]
         with h5py.File(self.dataset_path, 'r') as hdf:
-            img = torch.tensor(hdf.get(img_id).get('img'))
+            img = torch.tensor(np.array(hdf.get(img_id).get('img')))
             label = np.array(hdf.get(img_id).get('label')) if self.mode == 'train' else None
         return self.preprocessing(img).float(), label
 
