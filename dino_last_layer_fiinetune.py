@@ -148,11 +148,11 @@ optimizer = getattr(torch.optim, OPTIMIZER)(model.parameters(), **OPTIMIZER_PARA
 criterion = getattr(torch.nn, LOSS)()
 metric = getattr(torchmetrics, METRIC)('binary')
 min_loss, best_epoch = float('inf'), 0
-print("Starting training")
-train_model(model, train_dataloader, val_dataloader, device, optimizer_name=OPTIMIZER, optimizer_params=OPTIMIZER_PARAMS, 
-                 loss_name=LOSS, metric_name=METRIC, num_epochs=NUM_EPOCHS, patience=PATIENCE, save_path='best_model_dino_last_block2.pth')
-
-model.load_state_dict(torch.load('best_model_dino_last_block3.pth', weights_only=True))
+# print("Starting training")
+# train_model(model, train_dataloader, val_dataloader, device, optimizer_name=OPTIMIZER, optimizer_params=OPTIMIZER_PARAMS, 
+#                  loss_name=LOSS, metric_name=METRIC, num_epochs=NUM_EPOCHS, patience=PATIENCE, save_path='best_model_dino_last_block2.pth')
+print("Evaluating model")
+model.load_state_dict(torch.load('best_model_dino_last_block2.pth', weights_only=True))
 model.eval()
 model.to(device)
 prediction_dict = {}
@@ -171,5 +171,5 @@ with h5py.File(TEST_IMAGES_PATH, 'r') as hdf:
         solutions_data['ID'].append(int(test_id))
         solutions_data['Pred'].append(int(pred.item() > 0.5))
 solutions_data = pd.DataFrame(solutions_data).set_index('ID')
-solutions_data.to_csv('results_3.csv')
+solutions_data.to_csv('results_last_layer_finetune_classic.csv')
 
