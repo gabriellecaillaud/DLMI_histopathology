@@ -255,6 +255,8 @@ if __name__=="__main__":
     model = HistoClassifierHead(dim_input=768, hidden_dim=128, dropout=0.1)
     # Training
     model_path = "classifier_dino_staingan.pth"
-    train_model(model, train_dataloader, val_dataloader, device, optimizer_name='Adam', optimizer_params={'lr': 0.001}, 
-                    loss_name='BCELoss', metric_name='Accuracy', num_epochs=100, patience=10, save_path=model_path)
+    # train_model(model, train_dataloader, val_dataloader, device, optimizer_name='Adam', optimizer_params={'lr': 0.001}, 
+    #                 loss_name='BCELoss', metric_name='Accuracy', num_epochs=100, patience=10, save_path=model_path)
 
+    model.load_state_dict(torch.load(model_path))
+    
