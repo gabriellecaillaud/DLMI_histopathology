@@ -13,3 +13,5 @@ Training files:
 - `stain_tools.py`: some experiments with Macenko
 - `stainet_dino_last_block_features.py`: Code to normalize images with StainNet, and finetune dino's last block
 - `staingan_training.py`: code to compute features using StainGAN and Dino, and train a classifier head 
+
+The pretrained weights of the StainGAN and StainNet models can be downloaded from : https://www.kaggle.com/code/nghihuynh/stain-normalization-staingan-stainnet 
