@@ -4,7 +4,7 @@ import torchmetrics
 from tqdm import tqdm
 
 def train_model(model, train_dataloader, val_dataloader, device, optimizer_name='Adam', optimizer_params={'lr': 0.001}, 
-                 loss_name='BCELoss', metric_name='Accuracy', num_epochs=100, patience=10, save_path='best_model.pth'):
+                 loss_name='BCELoss', metric_name='Accuracy', num_epochs=100, patience=10, save_path='best_model.pth', squeeze_model_outputs = True):
     """
     Trains a PyTorch model with early stopping.
     
@@ -20,6 +20,7 @@ def train_model(model, train_dataloader, val_dataloader, device, optimizer_name=
         num_epochs: Maximum number of training epochs.
         patience: Number of epochs to wait for improvement before stopping.
         save_path: Path to save the best model.
+        squeeze_model_outputs: whether to apply .squeeze(1) for loss computation
     """
     
     optimizer = getattr(torch.optim, optimizer_name)(model.parameters(), **optimizer_params)
@@ -36,7 +37,8 @@ def train_model(model, train_dataloader, val_dataloader, device, optimizer_name=
         for train_x, train_y in tqdm(train_dataloader, leave=False):
             optimizer.zero_grad()
             train_pred = model(train_x.to(device))
-            # train_pred = train_pred.squeeze(1)
+            if squeeze_model_outputs:
+                train_pred = train_pred.squeeze(1)
             loss = criterion(train_pred, train_y.to(device))
             loss.backward()
             optimizer.step()
@@ -51,7 +53,8 @@ def train_model(model, train_dataloader, val_dataloader, device, optimizer_name=
         for val_x, val_y in tqdm(val_dataloader, leave=False):
             with torch.no_grad():
                 val_pred = model(val_x.to(device))
-                # val_pred = val_pred.squeeze(1)
+            if squeeze_model_outputs:
+                val_pred = val_pred.squeeze(1)
             loss = criterion(val_pred, val_y.to(device))
             
             val_losses.extend([loss.item()] * len(val_y))
